@@ -1,7 +1,14 @@
 ﻿namespace MovieLens.Data.Sql
 
+open System
 open MovieLens.Data
 open System.Data.SqlClient
+
+module internal Run =
+    let sequentially =
+        Seq.reduce (fun fst snd -> async { 
+            do! fst
+            return! snd })
 
 [<AutoOpen>]
 module internal Helpers =
@@ -14,9 +21,11 @@ module internal Helpers =
 
     let setParameters (parameters : seq<string * obj>) (command : SqlCommand) =
         command.Parameters.Clear()
-        parameters |> Seq.iter (fun (name, value) -> command.Parameters.AddWithValue(name, value) |> ignore)
+        parameters
+        |> Seq.map (fun (name, value) -> name, (value |> Option.ofObj |> Option.orElse (Some (upcast DBNull.Value)) |> Option.get))
+        |> Seq.iter (fun (name, value) -> command.Parameters.AddWithValue(name, value) |> ignore)
         command
-    
+
     let executeNonQuery sql (command : SqlCommand) = async {
         command.CommandText <- sql
         do! command.ExecuteNonQueryAsync() |> Async.AwaitTask |> Async.Ignore
@@ -43,10 +52,6 @@ module Export =
         do! command |> executeNonQuery "USE MovieLens"
         // Movies
         do! command |> executeNonQuery "CREATE TABLE Movies (MovieId INT NOT NULL PRIMARY KEY, Genres VARCHAR(255) NOT NULL, Title VARCHAR(255) NOT NULL)"
-        let runSequentially =
-            Seq.reduce (fun fst snd -> async { 
-                    do! fst
-                    return! snd })
         let! movies = Movies.AsyncGetSample()
         do!
             movies.Rows
@@ -55,14 +60,14 @@ module Export =
                     command
                     |> setParameters ["@MovieId", upcast movie.MovieId; "@Genres", upcast movie.Genres; "@Title", upcast movie.Title]
                     |> executeNonQuery "INSERT INTO Movies (MovieId, Genres, Title) VALUES (@MovieId, @Genres, @Title)" })
-            |> runSequentially
+            |> Run.sequentially
         // Ratings
         do! command |> executeNonQuery "CREATE TABLE Ratings (
-	        MovieId INT NOT NULL FOREIGN KEY REFERENCES Movies(MovieId),
-	        UserId INT NOT NULL,
-	        Rating DECIMAL NOT NULL,
-	        [Timestamp] INT NOT NULL,
-	        PRIMARY KEY (MovieId, UserId))"
+            MovieId INT NOT NULL FOREIGN KEY REFERENCES Movies(MovieId),
+            UserId INT NOT NULL,
+            Rating DECIMAL(2, 1) NOT NULL,
+            [Timestamp] INT NOT NULL,
+            PRIMARY KEY (MovieId, UserId))"
         let! ratings = Ratings.AsyncGetSample()
         do!
             ratings.Rows
@@ -71,14 +76,14 @@ module Export =
                     command
                     |> setParameters ["@MovieId", upcast rating.MovieId; "@UserId", upcast rating.UserId; "@Rating", upcast rating.Rating; "@Timestamp", upcast rating.Timestamp]
                     |> executeNonQuery "INSERT INTO Ratings (MovieId, UserId, Rating, [Timestamp]) VALUES (@MovieId, @UserId, @Rating, @Timestamp)" })
-            |> runSequentially
+            |> Run.sequentially
         // Tags
         do! command |> executeNonQuery "CREATE TABLE Tags (
-	        MovieId INT NOT NULL FOREIGN KEY REFERENCES Movies(MovieId),
-	        UserId INT NOT NULL,
-	        Tag VARCHAR(255) NOT NULL,
-	        [Timestamp] INT NOT NULL,
-	        PRIMARY KEY (MovieId, UserId))"
+            TagId INT NOT NULL IDENTITY(1, 1) PRIMARY KEY,
+            MovieId INT NOT NULL FOREIGN KEY REFERENCES Movies(MovieId),
+            UserId INT NOT NULL,
+            Tag VARCHAR(255) NOT NULL,
+            [Timestamp] INT NOT NULL)"
         let! tags = Tags.AsyncGetSample()
         do!
             tags.Rows
@@ -87,15 +92,14 @@ module Export =
                 command
                 |> setParameters ["@MovieId", upcast tag.MovieId; "@UserId", upcast tag.UserId; "@Tag", upcast tag.Tag; "@Timestamp", upcast tag.Timestamp]
                 |> executeNonQuery "INSERT INTO Tags (MovieId, UserId, Tag, [Timestamp]) VALUES (@MovieId, @UserId, @Tag, @Timestamp)" })
-            |> runSequentially
+            |> Run.sequentially
         // Links
         do! command |> executeNonQuery "CREATE TABLE Links (
-	        MovieId INT NOT NULL FOREIGN KEY REFERENCES Movies(MovieId),
-	        ImdbId INT NOT NULL,
-	        TmdbId INT NOT NULL,
-	        PRIMARY KEY (MovieId),
-	        UNIQUE (ImdbId),
-	        UNIQUE (TmdbId))"
+            MovieId INT NOT NULL FOREIGN KEY REFERENCES Movies(MovieId),
+            ImdbId INT NOT NULL,
+            TmdbId INT NULL,
+            PRIMARY KEY (MovieId),
+            UNIQUE (ImdbId))"
         let! links = Links.AsyncGetSample()
         do!
             links.Rows
@@ -104,7 +108,7 @@ module Export =
                     command
                     |> setParameters ["@MovieId", upcast link.MovieId; "@ImdbId", upcast link.ImdbId; "@TmdbId", upcast link.TmdbId]
                     |> executeNonQuery "INSERT INTO Links (MovieId, ImdbId, TmdbId) VALUES (@MovieId, @ImdbId, @TmdbId)" })
-            |> runSequentially
+            |> Run.sequentially
         // GenomeTags
         do! command |> executeNonQuery "CREATE TABLE GenomeTags (TagId INT NOT NULL PRIMARY KEY, Tag VARCHAR(255) NOT NULL)"
         let! genomeTags = GenomeTags.AsyncGetSample()
@@ -115,12 +119,12 @@ module Export =
                     command
                     |> setParameters ["@TagId", upcast genomeTag.TagId; "@Tag", upcast genomeTag.Tag]
                     |> executeNonQuery "INSERT INTO GenomeTags (TagId, Tag) VALUES (@TagId, @Tag)" })
-            |> runSequentially
+            |> Run.sequentially
         // GenomeScores
         do! command |> executeNonQuery "CREATE TABLE GenomeScores (
 	        MovieId INT NOT NULL FOREIGN KEY REFERENCES Movies(MovieId),
 	        TagId INT NOT NULL FOREIGN KEY REFERENCES GenomeTags(TagId),
-	        Relevance DECIMAL NOT NULL
+	        Relevance DECIMAL(28,27) NOT NULL
 	        PRIMARY KEY (MovieId, TagId))"
         let! genomeScores = GenomeScores.AsyncGetSample()
         do!
@@ -130,5 +134,5 @@ module Export =
                     command
                     |> setParameters ["@MovieId", upcast genomeScore.MovieId; "@TagId", upcast genomeScore.TagId; "@Relevance", upcast genomeScore.Relevance]
                     |> executeNonQuery "INSERT INTO GenomeScores(MovieId, TagId, Relevance) VALUES (@MovieId, @TagId, @Relevance)" })
-            |> runSequentially }
+            |> Run.sequentially }
 
