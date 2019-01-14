@@ -7,6 +7,17 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "MovieLens.Data", "MovieLens
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "MovieLens.Data.Exporter", "MovieLens.Data.Exporter\MovieLens.Data.Exporter.fsproj", "{7EDE61A7-8547-400D-9FE8-73DD90407C6A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "git", "git", "{5B438735-B139-42B2-A546-2438578556C5}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{BC867246-5831-4DAF-83DA-17DF48F5ED76}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
