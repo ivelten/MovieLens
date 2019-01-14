@@ -3,7 +3,31 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "MovieLens.Data", "MovieLens.Data\MovieLens.Data.fsproj", "{27CDD0BD-747C-4C34-A65A-0C50D01DCB46}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "MovieLens.Tests", "MovieLens.Tests\MovieLens.Tests.fsproj", "{D6F174B9-C1E5-4B3B-89E8-3901A4F76254}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "MovieLens.Data.Exporter", "MovieLens.Data.Exporter\MovieLens.Data.Exporter.fsproj", "{7EDE61A7-8547-400D-9FE8-73DD90407C6A}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{27CDD0BD-747C-4C34-A65A-0C50D01DCB46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27CDD0BD-747C-4C34-A65A-0C50D01DCB46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27CDD0BD-747C-4C34-A65A-0C50D01DCB46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27CDD0BD-747C-4C34-A65A-0C50D01DCB46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6F174B9-C1E5-4B3B-89E8-3901A4F76254}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6F174B9-C1E5-4B3B-89E8-3901A4F76254}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6F174B9-C1E5-4B3B-89E8-3901A4F76254}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6F174B9-C1E5-4B3B-89E8-3901A4F76254}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EDE61A7-8547-400D-9FE8-73DD90407C6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EDE61A7-8547-400D-9FE8-73DD90407C6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EDE61A7-8547-400D-9FE8-73DD90407C6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EDE61A7-8547-400D-9FE8-73DD90407C6A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection

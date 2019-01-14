@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MovieLens.Data.Exporter": {
+      "commandName": "Project",
+      "commandLineArgs": "\"Data Source=.;Integrated Security=True\""
+    }
+  }
+}
